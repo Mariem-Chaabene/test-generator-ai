@@ -1,34 +1,26 @@
-import requests
+from fastapi import FastAPI
+from models import CodeRequest
+from ai_service import generate_tests
+from fastapi.middleware.cors import CORSMiddleware
 
-code = """
-public class Calculator {
-    public int add(int a, int b) {
-        return a + b;
-    }
-}
-"""
+app = FastAPI()
 
-prompt = f"""
-You are a senior Java developer.
-Generate JUnit 5 unit tests for this Java class:
-
-{code}
-
-Rules:
-- Use JUnit 5
-- Cover edge cases
-- Use Arrange-Act-Assert pattern
-- Return only Java test code
-"""
-
-response = requests.post(
-    "http://localhost:11434/api/generate",
-	
-    json={
-        "model": "llama3",
-        "prompt": prompt,
-        "stream": False
-    }
+# CORS (pour React)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
-print(response.json()["response"])
+@app.get("/")
+def home():
+    return {"message": "AI Test Generator running"}
+@app.post("/generate-tests")
+def generate(request: CodeRequest):
+
+    result = generate_tests(request.code)
+
+    return {
+        "tests": result
+    }
