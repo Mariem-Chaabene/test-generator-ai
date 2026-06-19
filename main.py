@@ -1,26 +1,50 @@
-from fastapi import FastAPI
-from models import CodeRequest
-from ai_service import generate_tests
+from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI()
+from models import CodeRequest
+from ai_service import generate_tests
 
-# CORS (pour React)
+app = FastAPI(
+    title="AI Test Generator",
+    version="1.0.0"
+)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+
 @app.get("/")
 def home():
-    return {"message": "AI Test Generator running"}
+    return {
+        "message": "AI Test Generator running"
+    }
+
+
 @app.post("/generate-tests")
 def generate(request: CodeRequest):
 
-    result = generate_tests(request.code)
+    tests = generate_tests(request.code)
 
     return {
-        "tests": result
+        "tests": tests
+    }
+
+
+@app.post("/upload-java")
+async def upload_java(file: UploadFile = File(...)):
+
+    content = await file.read()
+
+    java_code = content.decode("utf-8")
+
+    tests = generate_tests(java_code)
+
+    return {
+        "filename": file.filename,
+        "tests": tests
     }

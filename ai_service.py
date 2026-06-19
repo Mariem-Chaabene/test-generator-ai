@@ -1,28 +1,41 @@
 import requests
+import re
+
 
 def generate_tests(code: str):
 
     prompt = f"""
-You are a senior Java developer.
+Generate JUnit 5 tests only.
 
-Generate JUnit 5 unit tests for this Java class:
-
+Java code:
 {code}
 
-Rules:
-- Use JUnit 5
-- Cover edge cases
-- Use Arrange-Act-Assert
-- Return ONLY Java code
+Return ONLY Java code.
+Max 3 tests.
+No explanation.
 """
 
     response = requests.post(
         "http://localhost:11434/api/generate",
         json={
-            "model": "llama3",
+            "model": "qwen2.5:3b",
             "prompt": prompt,
-            "stream": False
+            "stream": False,
+            "options": {
+                "temperature": 0.1,
+                "num_predict": 150,
+                "num_ctx": 512
+            }
         }
     )
 
-    return response.json()["response"]
+    if response.status_code != 200:
+        raise Exception(f"Ollama error: {response.text}")
+
+    # 👇 IMPORTANT : clean markdown here
+    result = response.json()["response"]
+
+    result = re.sub(r"```java", "", result)
+    result = re.sub(r"```", "", result)
+
+    return result.strip()
