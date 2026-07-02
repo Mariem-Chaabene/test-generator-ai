@@ -1,8 +1,11 @@
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 
-from models import CodeRequest
+from schemas.code_request import CodeRequest
 from ai_service import generate_tests
+
+from routes import identity
+from models import CodeRequest
 
 app = FastAPI(
     title="AI Test Generator",
@@ -17,6 +20,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ----------- Anciennes routes -----------
 
 @app.get("/")
 def home():
@@ -48,3 +52,7 @@ async def upload_java(file: UploadFile = File(...)):
         "filename": file.filename,
         "tests": tests
     }
+
+# ----------- Nouveau router -----------
+
+app.include_router(identity.router)
