@@ -8,7 +8,16 @@ from models import Conversation
 from models import Message
 from database import SessionLocal
 
+<<<<<<< HEAD
 // Création de l’application FastAPI
+=======
+from schemas.code_request import CodeRequest
+from ai_service import generate_tests
+
+from routes import identity
+from models import CodeRequest
+
+>>>>>>> cf32ac958a1882f8fe246d0cb3a200946693257e
 app = FastAPI(
     title="AI Test Generator",
     version="1.0.0"
@@ -28,7 +37,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+<<<<<<< HEAD
 //API de test
+=======
+# ----------- Anciennes routes -----------
+
+>>>>>>> cf32ac958a1882f8fe246d0cb3a200946693257e
 @app.get("/")
 def home():
     return {"message": "AI Test Generator running"}
@@ -56,6 +70,7 @@ async def upload_java(file: UploadFile = File(...)):
         "tests": tests
     }
 
+<<<<<<< HEAD
 
 //Gestion des utilisateurs (Identity)
     def get_or_create_identity(db, identity_id: str):
@@ -93,3 +108,8 @@ msg_bot = Message(
 
 db.add(msg_bot)
 db.commit()
+=======
+# ----------- Nouveau router -----------
+
+app.include_router(identity.router)
+>>>>>>> cf32ac958a1882f8fe246d0cb3a200946693257e
