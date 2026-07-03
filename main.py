@@ -9,14 +9,20 @@ from models import Message
 from database import SessionLocal
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 // Création de l’application FastAPI
 =======
+=======
+>>>>>>> cf32ac958a1882f8fe246d0cb3a200946693257e
 from schemas.code_request import CodeRequest
 from ai_service import generate_tests
 
 from routes import identity
 from models import CodeRequest
 
+<<<<<<< HEAD
+>>>>>>> cf32ac958a1882f8fe246d0cb3a200946693257e
+=======
 >>>>>>> cf32ac958a1882f8fe246d0cb3a200946693257e
 app = FastAPI(
     title="AI Test Generator",
@@ -38,8 +44,11 @@ app.add_middleware(
 )
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 //API de test
 =======
+=======
+>>>>>>> cf32ac958a1882f8fe246d0cb3a200946693257e
 # ----------- Anciennes routes -----------
 
 >>>>>>> cf32ac958a1882f8fe246d0cb3a200946693257e
@@ -70,6 +79,7 @@ async def upload_java(file: UploadFile = File(...)):
         "tests": tests
     }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 
 //Gestion des utilisateurs (Identity)
@@ -108,6 +118,11 @@ msg_bot = Message(
 
 db.add(msg_bot)
 db.commit()
+=======
+# ----------- Nouveau router -----------
+
+app.include_router(identity.router)
+>>>>>>> cf32ac958a1882f8fe246d0cb3a200946693257e
 =======
 # ----------- Nouveau router -----------
 

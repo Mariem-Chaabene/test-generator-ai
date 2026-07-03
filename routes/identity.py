@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 from fastapi import APIRouter
 
 router = APIRouter()
@@ -7,6 +8,8 @@ router = APIRouter()
 def create_identity():
     return {"identity_id": 1}
 =======
+=======
+>>>>>>> cf32ac958a1882f8fe246d0cb3a200946693257e
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from database import SessionLocal
@@ -29,5 +32,9 @@ def get_identity(db: Session = Depends(get_db)):
     db.commit()
     db.refresh(identity)
 
+<<<<<<< HEAD
+    return {"identity_id": identity.id}
+>>>>>>> cf32ac958a1882f8fe246d0cb3a200946693257e
+=======
     return {"identity_id": identity.id}
 >>>>>>> cf32ac958a1882f8fe246d0cb3a200946693257e
