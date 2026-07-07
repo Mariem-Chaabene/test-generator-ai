@@ -1,13 +1,24 @@
-@router.post("/conversation")
-def create_conversation(identity_id: int, db: Session = Depends(get_db)):
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
 
-    conv = Conversation(
-        identity_id=identity_id,
-        title="New chat"
+from database import get_db
+from models.conversation import Conversation
+from schemas.conversation import ConversationCreate
+
+@router.post("")
+def create_conversation(
+    request: ConversationCreate,
+    db: Session = Depends(get_db)
+):
+
+    conversation = Conversation(
+        identity_id=request.identity_id
     )
 
-    db.add(conv)
+    db.add(conversation)
     db.commit()
-    db.refresh(conv)
+    db.refresh(conversation)
 
-    return conv
+    return {
+        "conversation_id": conversation.id
+    }

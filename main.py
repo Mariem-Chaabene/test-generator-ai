@@ -1,29 +1,24 @@
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from routes import identity
+from routes import conversation
 from request_models import CodeRequest
 from services.ai_service import generate_tests
 from models import Identity
 from models import Conversation
 from models import Message
+from models import CodeRequest
+
 from database import SessionLocal
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-// Création de l’application FastAPI
-=======
-=======
->>>>>>> cf32ac958a1882f8fe246d0cb3a200946693257e
+
+# Création de lapplication FastAPI
+
 from schemas.code_request import CodeRequest
 from ai_service import generate_tests
 
-from routes import identity
-from models import CodeRequest
 
-<<<<<<< HEAD
->>>>>>> cf32ac958a1882f8fe246d0cb3a200946693257e
-=======
->>>>>>> cf32ac958a1882f8fe246d0cb3a200946693257e
+
 app = FastAPI(
     title="AI Test Generator",
     version="1.0.0"
@@ -42,16 +37,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-<<<<<<< HEAD
-<<<<<<< HEAD
-//API de test
-=======
-=======
->>>>>>> cf32ac958a1882f8fe246d0cb3a200946693257e
-# ----------- Anciennes routes -----------
-
->>>>>>> cf32ac958a1882f8fe246d0cb3a200946693257e
 @app.get("/")
 def home():
     return {"message": "AI Test Generator running"}
@@ -78,9 +63,6 @@ async def upload_java(file: UploadFile = File(...)):
         "filename": file.filename,
         "tests": tests
     }
-
-<<<<<<< HEAD
-<<<<<<< HEAD
 
 //Gestion des utilisateurs (Identity)
     def get_or_create_identity(db, identity_id: str):
@@ -118,13 +100,12 @@ msg_bot = Message(
 
 db.add(msg_bot)
 db.commit()
-=======
+
 # ----------- Nouveau router -----------
 
 app.include_router(identity.router)
->>>>>>> cf32ac958a1882f8fe246d0cb3a200946693257e
-=======
-# ----------- Nouveau router -----------
+
+
 
 app.include_router(identity.router)
->>>>>>> cf32ac958a1882f8fe246d0cb3a200946693257e
+
