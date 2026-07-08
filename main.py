@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from routes import identity
 from routes import conversation
+from routes import auth
 
 app = FastAPI(
     title="AI Test Generator",
@@ -19,7 +20,7 @@ app.add_middleware(
 
 app.include_router(identity.router)
 app.include_router(conversation.router)
-
+app.include_router(auth.router)
 
 @app.get("/")
 def home():
