@@ -7,6 +7,7 @@ from schemas.conversation import ConversationCreate
 from models.requests import CodeRequest
 from services.ai_service import generate_tests
 from models.message import Message
+from schemas.conversation import ConversationMessages
 router = APIRouter(
     prefix="/conversation",
     tags=["conversation"]
@@ -119,4 +120,22 @@ async def upload_java(
         "conversation_id": id,
         "filename": file.filename,
         "tests": tests
+    }
+
+@router.get("/{id}/messages", response_model=ConversationMessages)
+def get_messages(
+    id: int,
+    db: Session = Depends(get_db)
+):
+
+    messages = (
+        db.query(Message)
+        .filter(Message.conversation_id == id)
+        .order_by(Message.created_at.asc())
+        .all()
+    )
+
+    return {
+        "conversation_id": id,
+        "messages": messages
     }
