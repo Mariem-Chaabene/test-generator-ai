@@ -1,16 +1,18 @@
 from fastapi import APIRouter, Depends, UploadFile, File
 from sqlalchemy.orm import Session
+
 from database import get_db
 from models.conversation import Conversation
 from schemas.conversation import ConversationCreate
-
 from models.requests import CodeRequest
 from services.ai_service import generate_tests
+from models.message import Message
 
 router = APIRouter(
     prefix="/conversation",
     tags=["conversation"]
 )
+
 
 @router.post("")
 def create_conversation(
@@ -19,7 +21,8 @@ def create_conversation(
 ):
 
     conversation = Conversation(
-        identity_id=request.identity_id
+        identity_id=request.identity_id,
+        title="New chat"
     )
 
     db.add(conversation)
@@ -27,17 +30,46 @@ def create_conversation(
     db.refresh(conversation)
 
     return {
-        "conversation_id": conversation.id
+        "conversation_id": conversation.id,
     }
 
-@router.post("/generate-tests")
-def generate(request: CodeRequest):
 
+@router.post("/{id}/generate-tests")
+def generate(
+    id: int,
+    request: CodeRequest,
+    db: Session = Depends(get_db)
+):
+ # 1 - enregistrer le message utilisateur
+
+    user_message = Message(
+        conversation_id=id,
+        role="user",
+        content=request.code
+    )
+
+    db.add(user_message)
+    db.commit()
+
+	 # 2 - appeler Ollama
     tests = generate_tests(request.code)
 
+ # 3 - enregistrer la réponse IA
+
+    assistant_message = Message(
+        conversation_id=id,
+        role="assistant",
+        content=tests
+    )
+
+    db.add(assistant_message)
+    db.commit()
+	    # 4 - retourner résultat
     return {
+        "conversation_id": id,
         "tests": tests
     }
+
 
 @router.post("/upload-java")
 async def upload_java(file: UploadFile = File(...)):
