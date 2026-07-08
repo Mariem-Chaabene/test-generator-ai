@@ -1,5 +1,5 @@
 import requests
-
+import re
 
 
 def generate_tests(code: str):

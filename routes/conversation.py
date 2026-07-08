@@ -7,7 +7,6 @@ from schemas.conversation import ConversationCreate
 from models.requests import CodeRequest
 from services.ai_service import generate_tests
 from models.message import Message
-
 router = APIRouter(
     prefix="/conversation",
     tags=["conversation"]
@@ -71,16 +70,53 @@ def generate(
     }
 
 
-@router.post("/upload-java")
-async def upload_java(file: UploadFile = File(...)):
+@router.post("/{id}/upload-java")
+async def upload_java(
+    id: int,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db)
+):
+
+    # 1 - Lire le fichier Java
 
     content = await file.read()
 
     java_code = content.decode("utf-8")
 
+
+    # 2 - Enregistrer le message utilisateur
+
+    user_message = Message(
+        conversation_id=id,
+        role="user",
+        content=java_code
+    )
+
+    db.add(user_message)
+    db.commit()
+
+
+    # 3 - Appeler Ollama
+
     tests = generate_tests(java_code)
 
+
+    # 4 - Enregistrer la réponse IA
+
+    assistant_message = Message(
+        conversation_id=id,
+        role="assistant",
+        content=tests
+    )
+
+    db.add(assistant_message)
+    db.commit()
+
+
+    # 5 - Retourner le résultat
+
     return {
+        "conversation_id": id,
         "filename": file.filename,
         "tests": tests
     }
