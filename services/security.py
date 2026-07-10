@@ -1,6 +1,7 @@
 import bcrypt
 from jose import jwt
 from datetime import datetime, timedelta
+from jose import jwt, JWTError
 
 
 SECRET_KEY = "secret-key-change-later"
@@ -45,4 +46,24 @@ def create_access_token(data: dict):
         payload,
         SECRET_KEY,
         algorithm=ALGORITHM
+    )
+
+def create_guest_token(identity_id: int):
+    payload = {
+        "identity_id": identity_id,
+        "type": "guest"
+    }
+
+    return jwt.encode(
+        payload,
+        SECRET_KEY,
+        algorithm=ALGORITHM
+    )
+
+
+def verify_token(token: str):
+    return jwt.decode(
+        token,
+        SECRET_KEY,
+        algorithms=[ALGORITHM]
     )

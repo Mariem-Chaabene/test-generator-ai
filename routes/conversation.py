@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, UploadFile, File
 from sqlalchemy.orm import Session
-
+from services.auth_service import get_current_identity
+from models.identity import Identity
 from database import get_db
 from models.conversation import Conversation
 from schemas.conversation import ConversationCreate
@@ -8,6 +9,7 @@ from models.requests import CodeRequest
 from services.ai_service import generate_tests
 from models.message import Message
 from schemas.conversation import ConversationMessages
+
 router = APIRouter(
     prefix="/conversation",
     tags=["conversation"]
@@ -16,14 +18,14 @@ router = APIRouter(
 
 @router.post("")
 def create_conversation(
-    request: ConversationCreate,
+    current_identity: Identity = Depends(get_current_identity),
     db: Session = Depends(get_db)
 ):
 
-    conversation = Conversation(
-        identity_id=request.identity_id,
-        title="New chat"
-    )
+	conversation = Conversation(
+		identity_id=current_identity.id,
+		title="New chat"
+	)
 
     db.add(conversation)
     db.commit()
@@ -38,8 +40,23 @@ def create_conversation(
 def generate(
     id: int,
     request: CodeRequest,
+	current_identity: Identity = Depends(get_current_identity),
     db: Session = Depends(get_db)
 ):
+conversation = (
+    db.query(Conversation)
+    .filter(
+        Conversation.id == id,
+        Conversation.identity_id == current_identity.id
+    )
+    .first()
+)
+
+if conversation is None:
+    raise HTTPException(
+        status_code=404,
+        detail="Conversation not found"
+    )
  # 1 - enregistrer le message utilisateur
 
     user_message = Message(
@@ -75,9 +92,23 @@ def generate(
 async def upload_java(
     id: int,
     file: UploadFile = File(...),
+	current_identity: Identity = Depends(get_current_identity),
     db: Session = Depends(get_db)
 ):
+conversation = (
+    db.query(Conversation)
+    .filter(
+        Conversation.id == id,
+        Conversation.identity_id == current_identity.id
+    )
+    .first()
+)
 
+if conversation is None:
+    raise HTTPException(
+        status_code=404,
+        detail="Conversation not found"
+    )
     # 1 - Lire le fichier Java
 
     content = await file.read()
@@ -125,9 +156,23 @@ async def upload_java(
 @router.get("/{id}/messages", response_model=ConversationMessages)
 def get_messages(
     id: int,
+	current_identity: Identity = Depends(get_current_identity),
     db: Session = Depends(get_db)
 ):
+conversation = (
+    db.query(Conversation)
+    .filter(
+        Conversation.id == id,
+        Conversation.identity_id == current_identity.id
+    )
+    .first()
+)
 
+if conversation is None:
+    raise HTTPException(
+        status_code=404,
+        detail="Conversation not found"
+    )
     messages = (
         db.query(Message)
         .filter(Message.conversation_id == id)

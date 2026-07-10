@@ -3,7 +3,10 @@ from sqlalchemy.orm import Session
 
 
 from database import get_db
+
 from models.user import User
+from models.identity import Identity
+
 from schemas.auth import (
     RegisterRequest,
     LoginRequest
@@ -29,7 +32,7 @@ def register(
     db: Session = Depends(get_db)
 ):
 
-    existing = (
+    existing_user = (
         db.query(User)
         .filter(
             User.email == request.email
@@ -38,7 +41,7 @@ def register(
     )
 
 
-    if existing:
+    if existing_user:
         raise HTTPException(
             status_code=400,
             detail="Email already exists"
@@ -58,11 +61,21 @@ def register(
     db.refresh(user)
 
 
+    identity = Identity(
+        user_id=user.id,
+        type="user"
+    )
+
+
+    db.add(identity)
+    db.commit()
+    db.refresh(identity)
+
+
     return {
         "user_id": user.id,
         "email": user.email
     }
-
 
 
 
