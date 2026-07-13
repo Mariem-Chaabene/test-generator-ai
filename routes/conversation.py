@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, UploadFile, File
+from fastapi import APIRouter, Depends, UploadFile, File, HTTPException
 from sqlalchemy.orm import Session
 from services.auth_service import get_current_identity
 from models.identity import Identity
@@ -20,6 +20,24 @@ def create_conversation(
     current_identity: Identity = Depends(get_current_identity),
     db: Session = Depends(get_db)
 ):
+
+    # Vérifier limite guest
+    if current_identity.type == "guest":
+
+        conversations_count = (
+            db.query(Conversation)
+            .filter(
+                Conversation.identity_id == current_identity.id
+            )
+            .count()
+        )
+
+        if conversations_count >= 5:
+            raise HTTPException(
+                status_code=403,
+                detail="Guest users are limited to 5 conversations. Please create an account."
+            )
+
 
     conversation = Conversation(
         identity_id=current_identity.id,
