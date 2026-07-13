@@ -18,13 +18,34 @@ def get_current_identity(
     try:
         payload = verify_token(token)
 
-        identity = (
-            db.query(Identity)
-            .filter(
-                Identity.id == payload["identity_id"]
+        identity = None
+
+
+        # Cas Guest
+        if payload.get("type") == "guest":
+
+            identity = (
+                db.query(Identity)
+                .filter(
+                    Identity.id == payload["identity_id"]
+                )
+                .first()
             )
-            .first()
-        )
+
+
+        # Cas User
+        elif "sub" in payload:
+
+            user_id = int(payload["sub"])
+
+            identity = (
+                db.query(Identity)
+                .filter(
+                    Identity.user_id == user_id
+                )
+                .first()
+            )
+
 
         if identity is None:
             raise HTTPException(
@@ -32,7 +53,9 @@ def get_current_identity(
                 detail="Identity not found"
             )
 
+
         return identity
+
 
     except Exception:
         raise HTTPException(
