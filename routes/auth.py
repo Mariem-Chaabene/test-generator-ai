@@ -1,9 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-
-
+from services.auth_service import get_current_identity
 from database import get_db
-
 from models.user import User
 from models.identity import Identity
 
@@ -148,4 +146,50 @@ def login(
     return {
         "access_token": token,
         "token_type": "bearer"
+    }
+
+@router.get("/me")
+def get_me(
+    current_identity: Identity = Depends(get_current_identity)
+):
+
+    if current_identity.type == "guest":
+
+        return {
+            "type": "guest",
+            "identity_id": current_identity.id,
+            "user": None
+        }
+
+
+    return {
+        "type": "user",
+        "identity_id": current_identity.id,
+        "user": {
+            "id": current_identity.user.id,
+            "email": current_identity.user.email
+        }
+    }
+	
+@router.get("/me")
+def get_me(
+    current_identity: Identity = Depends(get_current_identity)
+):
+
+    if current_identity.type == "guest":
+
+        return {
+            "type": "guest",
+            "identity_id": current_identity.id,
+            "user": None
+        }
+
+
+    return {
+        "type": "user",
+        "identity_id": current_identity.id,
+        "user": {
+            "id": current_identity.user.id,
+            "email": current_identity.user.email
+        }
     }
