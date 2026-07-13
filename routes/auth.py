@@ -39,8 +39,6 @@ def register(
         )
         .first()
     )
-
-
     if existing_user:
         raise HTTPException(
             status_code=400,
@@ -61,19 +59,48 @@ def register(
     db.refresh(user)
 
 
-    identity = Identity(
-        user_id=user.id,
-        type="user"
-    )
+     # CAS 1 : le guest existe déjà
+    if request.guest_identity_id:
+
+        identity = (
+            db.query(Identity)
+            .filter(
+                Identity.id == request.guest_identity_id
+            )
+            .first()
+        )
 
 
-    db.add(identity)
+        if identity is None:
+            raise HTTPException(
+                status_code=404,
+                detail="Guest identity not found"
+            )
+
+
+        # Transformation guest -> user
+        identity.user_id = user.id
+        identity.type = "user"
+
+
+    # CAS 2 : création compte directement
+    else:
+
+        identity = Identity(
+            user_id=user.id,
+            type="user"
+        )
+
+        db.add(identity)
+
+
     db.commit()
     db.refresh(identity)
 
 
     return {
         "user_id": user.id,
+        "identity_id": identity.id,
         "email": user.email
     }
 
