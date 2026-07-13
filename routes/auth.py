@@ -32,9 +32,7 @@ def register(
 
     existing_user = (
         db.query(User)
-        .filter(
-            User.email == request.email
-        )
+        .filter(User.email == request.email)
         .first()
     )
     if existing_user:
@@ -44,65 +42,66 @@ def register(
         )
 
 
+    # créer le user
+
     user = User(
         email=request.email,
-        password=hash_password(
-            request.password
-        )
+        password=hash_password(request.password)
     )
-
 
     db.add(user)
     db.commit()
     db.refresh(user)
 
 
-     # CAS 1 : le guest existe déjà
+
+    # CAS GUEST -> USER
+
     if request.guest_identity_id:
 
         identity = (
             db.query(Identity)
             .filter(
-                Identity.id == request.guest_identity_id
+                Identity.id == request.guest_identity_id,
+                Identity.type == "guest"
             )
             .first()
         )
 
 
-        if identity is None:
-            raise HTTPException(
-                status_code=404,
-                detail="Guest identity not found"
-            )
+        if identity:
+
+            identity.type = "user"
+            identity.user_id = user.id
+
+            db.commit()
+
+            return {
+                "message": "Guest converted to user",
+                "user_id": user.id,
+                "identity_id": identity.id
+            }
 
 
-        # Transformation guest -> user
-        identity.user_id = user.id
-        identity.type = "user"
+    # CAS USER NORMAL
 
+    identity = Identity(
+        user_id=user.id,
+        type="user"
+    )
 
-    # CAS 2 : création compte directement
-    else:
-
-        identity = Identity(
-            user_id=user.id,
-            type="user"
-        )
-
-        db.add(identity)
-
-
+    db.add(identity)
     db.commit()
     db.refresh(identity)
 
 
     return {
+        "message": "User created",
         "user_id": user.id,
-        "identity_id": identity.id,
-        "email": user.email
+        "identity_id": identity.id
     }
 
-
+	
 
 @router.post("/login")
 def login(
